@@ -33,8 +33,15 @@
   ADMIN), `dashboard`, `layout` (topbar + sidenav). Routing lazy protégé. **Proxy dev** `/api`→:8080
   (pas de CORS). **À vérifier par firas** : backend up, `ng serve --proxy-config proxy.conf.json`
   → login admin → dashboard ; menu Utilisateurs visible en ADMIN.
-- **Prochaine étape : Semaine 1 — Jour 5** — FastAPI : `/health`, Pydantic Settings, connexion
-  PostgreSQL (asyncpg), 1er conteneur ; **CI verte sur les 3 services** + revue de semaine / démo 1.
+- **Semaine 1 — Jour 5 (FastAPI + CI) : CODE LIVRÉ, vérif en attente.** Service IA : pool
+  **asyncpg** (`core/db.py`), lifespan FastAPI (connect/disconnect résilient — démarre même si
+  la base est down), endpoints `/health` (liveness) et `/health/ready` (readiness `SELECT 1` →
+  200/503). Job **CI frontend activé** (`npm ci` + `npm run build` = validation AOT de tout le J4).
+  Les 3 jobs (ai-service, backend, frontend) sont désormais actifs. **À vérifier par firas** :
+  commit J4+J5, push → les 3 jobs verts dans Actions = **Semaine 1 bouclée**.
+- **Prochaine étape : Semaine 2 — Jour 1** — Flyway V2 (imports, tickets) + couche d'import
+  structuré (CSV OpenCSV streaming, XLSX Apache POI, JSON/TXT), détection MIME/encodage,
+  validation ligne à ligne. Voir rapport §9 Semaine 2.
 
 > Mettre à jour cette section à la fin de chaque jour du planning.
 > Planning complet : `SupportIQ_Rapport_Technique.md` §9 (8 semaines × 5 jours).
@@ -159,6 +166,10 @@ Décisions clés (détail + arguments d'entretien dans le rapport §3 et `docs/a
   `ng2-charts`/`@stomp/stompjs` **différés** (S4/S2 — ng2-charts@10 exige Angular 21, incompatible) ;
   (3) CORS évité via proxy Angular dev plutôt que config Spring ; (4) refresh silencieux sans
   single-flight (rafraîchissements concurrents possibles — à durcir si besoin).
+- **Écarts J5 assumés** : (1) démarrage FastAPI résilient à une base absente (readiness le signale,
+  ne bloque pas la CI unitaire) ; (2) CI frontend en `npm run build` (AOT) plutôt que lint+Karma
+  (ajoutés plus tard) ; (3) DSN asyncpg dérivé de `database_url` en retirant `+asyncpg` ; (4) warning
+  Pydantic `class Config` (fichier §15) laissé tel quel — à migrer en `SettingsConfigDict` en S3.
 - **Correctif skeleton** : 3 erreurs ruff (F401 ×2, F541) corrigées dans `llm.py`/`triage.py`
   pour garder la CI ai-service verte — le `settings` importé reviendra en S3.
 
