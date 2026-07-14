@@ -26,8 +26,15 @@
   ProblemDetail. Suite Testcontainers `AuthIntegrationTest` (login admin seedé, RBAC 401/403/201,
   rotation refresh, révocation logout, /me). **À vérifier par firas** : `mvn verify` (Docker requis
   pour Testcontainers) doit être vert ; login admin → token → appel protégé.
-- **Prochaine étape : Semaine 1 — Jour 4** — frontend Angular 18 : workspace, routing, guards,
-  intercepteur JWT + refresh silencieux, layout, pages login/register, état (ADR NgRx vs signals).
+- **Semaine 1 — Jour 4 (frontend Angular) : CODE LIVRÉ, vérif en attente.** Angular 18 standalone
+  + Material (Azure/Blue), état en **signals** (ADR-0002). `core/` : `AuthService` (login/register/
+  refresh/logout/me, user dérivé du JWT), `TokenStore` (localStorage), intercepteur JWT + **refresh
+  silencieux sur 401**, `authGuard` + `roleGuard` hiérarchique. `features/auth` (login, register
+  ADMIN), `dashboard`, `layout` (topbar + sidenav). Routing lazy protégé. **Proxy dev** `/api`→:8080
+  (pas de CORS). **À vérifier par firas** : backend up, `ng serve --proxy-config proxy.conf.json`
+  → login admin → dashboard ; menu Utilisateurs visible en ADMIN.
+- **Prochaine étape : Semaine 1 — Jour 5** — FastAPI : `/health`, Pydantic Settings, connexion
+  PostgreSQL (asyncpg), 1er conteneur ; **CI verte sur les 3 services** + revue de semaine / démo 1.
 
 > Mettre à jour cette section à la fin de chaque jour du planning.
 > Planning complet : `SupportIQ_Rapport_Technique.md` §9 (8 semaines × 5 jours).
@@ -148,6 +155,10 @@ Décisions clés (détail + arguments d'entretien dans le rapport §3 et `docs/a
   seedé au démarrage — cohérent §6/§7 ; (2) refresh token opaque hashé plutôt que JWT (révocable,
   rotatif) ; (3) filtre JWT sans hit DB (identité reconstruite des claims — TTL court compense) ;
   (4) endpoint utilitaire `/api/auth/me` ajouté (pratique, testable).
+- **Écarts J4 assumés** : (1) état en signals+services, pas NgRx (ADR-0002) ; (2) `chart.js`/
+  `ng2-charts`/`@stomp/stompjs` **différés** (S4/S2 — ng2-charts@10 exige Angular 21, incompatible) ;
+  (3) CORS évité via proxy Angular dev plutôt que config Spring ; (4) refresh silencieux sans
+  single-flight (rafraîchissements concurrents possibles — à durcir si besoin).
 - **Correctif skeleton** : 3 erreurs ruff (F401 ×2, F541) corrigées dans `llm.py`/`triage.py`
   pour garder la CI ai-service verte — le `settings` importé reviendra en S3.
 
