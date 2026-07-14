@@ -1,0 +1,29 @@
+# Node / Angular
+node_modules/
+dist/
+.angular/
+
+# Java / Spring
+target/
+build/
+*.class
+.gradle/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.ruff_cache/
+
+# Env & IDE
+.env
+.idea/
+.vscode/
+*.iml
+
+# Data & modèles (versionnés ailleurs / trop lourds)
+*.onnx
+*.bin
+eval/datasets/*.jsonl
+!eval/datasets/.gitkeep
