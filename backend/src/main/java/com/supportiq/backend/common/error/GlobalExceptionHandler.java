@@ -1,5 +1,7 @@
 package com.supportiq.backend.common.error;
 
+import com.supportiq.backend.imports.FileParseException;
+import com.supportiq.backend.imports.UnsupportedFileTypeException;
 import java.net.URI;
 import java.time.Instant;
 import java.util.LinkedHashMap;
@@ -16,6 +18,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 /**
  * Point unique de traduction des exceptions en reponses RFC 7807 (ProblemDetail).
@@ -49,30 +52,45 @@ public class GlobalExceptionHandler {
         return pd;
     }
 
-    /** Corps de requete absent, tronque ou JSON illisible -> 400 (et non 500). */
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ProblemDetail handleUnreadableBody(HttpMessageNotReadableException ex) {
         return problem(HttpStatus.BAD_REQUEST, "Requete invalide",
                 "Corps de requete absent ou JSON malforme.", "malformed-body");
     }
 
-    // --- Securite : identifiants et autorisations -------------------------------
+    // --- Imports (S2) -----------------------------------------------------------
 
-    /** Mauvais identifiants au login, ou refresh/token invalide -> 401 (message volontairement flou). */
+    @ExceptionHandler(UnsupportedFileTypeException.class)
+    public ProblemDetail handleUnsupportedFile(UnsupportedFileTypeException ex) {
+        return problem(HttpStatus.UNSUPPORTED_MEDIA_TYPE, "Format non supporte", ex.getMessage(),
+                "unsupported-file-type");
+    }
+
+    @ExceptionHandler(FileParseException.class)
+    public ProblemDetail handleParse(FileParseException ex) {
+        return problem(HttpStatus.BAD_REQUEST, "Fichier illisible", ex.getMessage(), "file-parse");
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ProblemDetail handleTooLarge(MaxUploadSizeExceededException ex) {
+        return problem(HttpStatus.PAYLOAD_TOO_LARGE, "Fichier trop volumineux",
+                "La taille du fichier depasse la limite autorisee.", "file-too-large");
+    }
+
+    // --- Securite ---------------------------------------------------------------
+
     @ExceptionHandler({BadCredentialsException.class, InvalidTokenException.class, AuthenticationException.class})
     public ProblemDetail handleAuth(RuntimeException ex) {
         return problem(HttpStatus.UNAUTHORIZED, "Authentification refusee",
                 "Identifiants ou jeton invalides.", "unauthorized");
     }
 
-    /** Role insuffisant (@PreAuthorize) -> 403. */
     @ExceptionHandler(AccessDeniedException.class)
     public ProblemDetail handleAccessDenied(AccessDeniedException ex) {
         return problem(HttpStatus.FORBIDDEN, "Acces refuse",
                 "Vous n'avez pas les droits necessaires.", "forbidden");
     }
 
-    /** Filet de securite : toute exception non mappee -> 500 generique, detail logge cote serveur. */
     @ExceptionHandler(Exception.class)
     public ProblemDetail handleUnexpected(Exception ex) {
         log.error("Erreur non geree", ex);

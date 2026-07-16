@@ -39,9 +39,21 @@
   200/503). Job **CI frontend activé** (`npm ci` + `npm run build` = validation AOT de tout le J4).
   Les 3 jobs (ai-service, backend, frontend) sont désormais actifs. **À vérifier par firas** :
   commit J4+J5, push → les 3 jobs verts dans Actions = **Semaine 1 bouclée**.
-- **Prochaine étape : Semaine 2 — Jour 1** — Flyway V2 (imports, tickets) + couche d'import
-  structuré (CSV OpenCSV streaming, XLSX Apache POI, JSON/TXT), détection MIME/encodage,
-  validation ligne à ligne. Voir rapport §9 Semaine 2.
+- **Semaine 1 : BOUCLÉE ET VÉRIFIÉE** — 3 jobs CI verts, stack up (login front → backend →
+  base, `/health/ready` = database up). Tout est sur `main` (GitHub).
+- **Semaine 2 — Jour 1 (import structuré) : CODE LIVRÉ, vérif en attente.** Flyway
+  `V2__imports_tickets.sql` (tables `imports` + `tickets`, contraintes CHECK/FK, index ;
+  entité `Ticket` différée au J2). Module `imports/` : détection type (magic bytes+extension)
+  et encodage (BOM+UTF-8), parseurs **streaming** CSV (OpenCSV), XLSX (excel-streaming-reader,
+  **sans OOM**), JSON (Jackson), TXT ; `RowCollector` (apercu+erreurs bornés). Endpoint
+  **`POST /api/imports`** (ADMIN, multipart) → ligne `imports` AWAITING_VALIDATION + apercu +
+  rapport d'erreurs ligne à ligne (pas de persistance de tickets — c'est le J2). Multipart 50 Mo,
+  handlers 415/400/413. Test `ImportIntegrationTest` (CSV, XLSX généré, CSV malformé, RBAC 403).
+  Générateur `scripts/generate_sample_csv.py` → `samples/tickets_10k.csv` (gitignoré). **À vérifier
+  par firas** : `mvn verify` vert ; upload du CSV 10k → totalRows=10000 sans OOM.
+- **Prochaine étape : Semaine 2 — Jour 2** — écran de mapping de colonnes (associer colonnes
+  fichier → champs ticket), prévisualisation 50 lignes, persistance du mapping réutilisable +
+  insertion des tickets. Voir rapport §9 Semaine 2.
 
 > Mettre à jour cette section à la fin de chaque jour du planning.
 > Planning complet : `SupportIQ_Rapport_Technique.md` §9 (8 semaines × 5 jours).
@@ -170,6 +182,12 @@ Décisions clés (détail + arguments d'entretien dans le rapport §3 et `docs/a
   ne bloque pas la CI unitaire) ; (2) CI frontend en `npm run build` (AOT) plutôt que lint+Karma
   (ajoutés plus tard) ; (3) DSN asyncpg dérivé de `database_url` en retirant `+asyncpg` ; (4) warning
   Pydantic `class Config` (fichier §15) laissé tel quel — à migrer en `SettingsConfigDict` en S3.
+- **Écarts S2-J1 assumés** : (1) entité JPA nommée `ImportJob` (`import` est un mot-clé Java) ;
+  `Ticket` non mappée au J1 (table créée, entité au J2) ; (2) détection type/encodage maison
+  (magic bytes + BOM/UTF-8) plutôt que Tika — dépendance en moins, suffisant pour CSV/XLSX/JSON/TXT ;
+  (3) XLSX via `excel-streaming-reader` (pjfanning) pour le streaming sans OOM plutôt que POI
+  standard ; (4) `GlobalExceptionHandler` (common) importe 2 exceptions du module `imports` —
+  couplage mineur assumé pour centraliser le mapping ProblemDetail.
 - **Correctif skeleton** : 3 erreurs ruff (F401 ×2, F541) corrigées dans `llm.py`/`triage.py`
   pour garder la CI ai-service verte — le `settings` importé reviendra en S3.
 

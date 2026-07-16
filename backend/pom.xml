@@ -20,6 +20,9 @@
     <properties>
         <java.version>21</java.version>
         <jjwt.version>0.12.6</jjwt.version>
+        <opencsv.version>5.9</opencsv.version>
+        <poi.version>5.5.1</poi.version>
+        <excel-streaming-reader.version>5.2.0</excel-streaming-reader.version>
     </properties>
 
     <dependencies>
@@ -68,7 +71,7 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- JWT : jjwt (api compile, impl+jackson runtime) -->
+        <!-- JWT : jjwt -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-api</artifactId>
@@ -87,6 +90,23 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!-- Import structure (S2-J1) : CSV streaming + XLSX streaming (sans OOM) -->
+        <dependency>
+            <groupId>com.opencsv</groupId>
+            <artifactId>opencsv</artifactId>
+            <version>${opencsv.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <version>${poi.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.pjfanning</groupId>
+            <artifactId>excel-streaming-reader</artifactId>
+            <version>${excel-streaming-reader.version}</version>
+        </dependency>
+
         <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -94,7 +114,7 @@
             <optional>true</optional>
         </dependency>
 
-        <!-- Tests : Spring, Security, Testcontainers (versions gerees par le BOM Boot) -->
+        <!-- Tests -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>

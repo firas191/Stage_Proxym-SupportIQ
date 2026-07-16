@@ -27,3 +27,6 @@ __pycache__/
 *.bin
 eval/datasets/*.jsonl
 !eval/datasets/.gitkeep
+
+# Fichiers d'exemple volumineux (regenerables via scripts/)
+samples/
